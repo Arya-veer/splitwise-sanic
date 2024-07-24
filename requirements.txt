@@ -1,0 +1,5 @@
+sanic
+tortoise-orm
+aerich
+jwt
+bcrypt
