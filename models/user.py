@@ -6,6 +6,13 @@ from tortoise import exceptions
 
 from configurations.settings import PASSWORD_SECRET
 
+class UserGroup(models.Model):
+    user = fields.ForeignKeyField("models.User","user_groups")
+    group = fields.ForeignKeyField("models.Group","user_groups")
+    settled_amount = fields.IntField(default = 0)
+    
+    class Meta:
+        table = "User_Group"
 
 class User(models.Model):
 
@@ -13,7 +20,7 @@ class User(models.Model):
     name = fields.CharField(max_length=30,null=True)
     password = fields.CharField(max_length=100,null=True)
     email = fields.CharField(max_length=40,validators=[validators.RegexValidator(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b',0)])
-    groups = fields.ManyToManyField("models.Group",related_name="users")
+    groups = fields.ManyToManyField("models.Group",related_name="users",through="UserGroup")
     secret = fields.UUIDField(unique = True,null = True)
     
     class Meta:
@@ -21,7 +28,6 @@ class User(models.Model):
     
     def __str__(self) -> str:
         return f"{self.name} - {self.email}"
-    
     
     def set_password(self,password):
         if self.secret is None:
@@ -42,5 +48,7 @@ class User(models.Model):
         if bcrypt.checkpw(combined_password,user.password):
             return user
         return None
-        
-        
+    
+    
+    
+    

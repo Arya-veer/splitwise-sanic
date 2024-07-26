@@ -1,7 +1,19 @@
 
 from models import Expense,ExpenseUser
 
+from tortoise.queryset import QuerySet
+
 from tortoise.transactions import in_transaction
+
+class ExpenseUserRepository:
+    
+    @staticmethod
+    async def get_from_filters(payload:dict,ordering:str = "id")->QuerySet[ExpenseUser]:
+        
+        expense_users = await ExpenseUser.filter(**payload).order_by(ordering)
+        return expense_users
+    
+    
 
 class ExpenseRepository:
     
@@ -24,4 +36,6 @@ class ExpenseRepository:
                 await ExpenseUser.get_or_create(**user,expense=expense)
         return expense
         
-    
+    @staticmethod
+    async def delete_expense(expense):
+        await expense.delete()

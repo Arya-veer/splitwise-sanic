@@ -53,3 +53,9 @@ async def list_expenses(request,static_id):
     expenses = await GroupManager.list_expenses()
     return response.json(expenses)
     
+    
+@group_blueprint.get("/<static_id:uuid>/settle_up")
+@group_member_permission
+async def settle_up(request,static_id):
+    await GroupManager.settle_up()
+    return response.json({"message":"Settled up expenses"})

@@ -7,7 +7,8 @@ from tortoise.exceptions import BaseORMException
 
 def handle_server_exceptions(request,exception:Exception):
     return response.json({
-        "message":"Something went wrong"
+        "message":"Something went wrong",
+        "error_message":str(exception)
     },status=500)
     
 def handle_sanic_exceptions(request,exception:SanicException):
