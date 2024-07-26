@@ -31,7 +31,7 @@ class RedisCache:
     async def get(cls,key):
         if not isinstance(key,str):
             raise Exception("Redis key can only be string")
-        value = await cls.__redis_cache.get(cls.prefix_key())
+        value = await cls.__redis_cache.get(cls.prefix_key(key))
         return value
     
     @classmethod
@@ -40,3 +40,10 @@ class RedisCache:
             raise Exception("Redis key can only be string")
         
         await cls.__redis_cache.delete(cls.prefix_key(key),*list(map(cls.prefix_key,more_keys)))
+        
+    @classmethod
+    async def get_dict(cls,key):
+        if not isinstance(key,str):
+            raise Exception("Redis key can only be string")
+        value = await cls.__redis_cache.hgetall(cls.prefix_key(key))
+        return value

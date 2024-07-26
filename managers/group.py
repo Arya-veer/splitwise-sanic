@@ -1,7 +1,7 @@
 from validators import GroupValidator,ExpenseValidator
 from repositories import GroupRepository,UserRepository,ExpenseRepository
 from serializers import GroupSerializer,UserSerializer,ExpenseSerializer
-from caches import GroupCache
+
 from .user import UserManager
 
 class GroupManager:
@@ -15,7 +15,6 @@ class GroupManager:
         group = await GroupRepository.create_group(payload)
         await GroupRepository.add_user_to_group(group,UserManager._user)
         serialized_group = GroupSerializer.serialize_group(group)
-        await GroupCache.set(str(serialized_group['static_id']),serialized_group)
         return serialized_group
     
     @staticmethod
