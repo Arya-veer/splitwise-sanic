@@ -9,3 +9,7 @@ class IncompleteParametersException(SanicException):
 class PermissionNotGrantedException(Forbidden):
     message = "Unauthorized access"
     quiet = False
+    
+    
+class InvalidFieldOrValueException(SanicException):
+    status_code = 400

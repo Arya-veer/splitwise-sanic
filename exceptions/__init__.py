@@ -1,2 +1,2 @@
 from .exceptions import *
-from .handlers import *
+from .handlers import error_handler

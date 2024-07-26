@@ -3,3 +3,4 @@ tortoise-orm
 aerich
 jwt
 bcrypt
+redis

@@ -1,5 +1,9 @@
 
 from models import Group
+from tortoise.exceptions import DoesNotExist,MultipleObjectsReturned
+
+from exceptions import InvalidFieldOrValueException
+
 class GroupRepository:
     
     
@@ -14,7 +18,18 @@ class GroupRepository:
         
     @staticmethod
     async def get_group_by_filters(payload):
-        group = await Group.get(**payload)
+        try:
+            group = await Group.get(**payload)
+        except DoesNotExist as e:
+            raise InvalidFieldOrValueException(
+                message="No 'Group' object exists with given fields",
+                context=payload
+                )
+        except ModuleNotFoundError as e:
+            raise InvalidFieldOrValueException(
+                message="Multiple 'Group' object exists with given fields",
+                context=payload
+                )
         return group
     
     @staticmethod
