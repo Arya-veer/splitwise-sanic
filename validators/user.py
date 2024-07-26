@@ -1,5 +1,5 @@
 
-from core.exceptions import IncompleteParametersException
+from exceptions import IncompleteParametersException
 
 class UserValidator:
     

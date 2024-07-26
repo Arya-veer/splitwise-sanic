@@ -3,9 +3,6 @@ from routes.group import group_blueprint
 from routes.auth import auth_blueprint
 from routes.expense import expense_blueprint
 
-
-
-
 api_blueprint_group = Blueprint.group(url_prefix="/api")
 
 def config_blueprints():

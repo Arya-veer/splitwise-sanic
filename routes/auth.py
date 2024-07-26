@@ -17,9 +17,6 @@ async def login(request):
 
 @auth_blueprint.route("/change_password",methods=["POST"])
 @protected
-async def change_password(request,*args, **kwargs):
+async def change_password(request,static_id,*args, **kwargs):
     await UserManager.change_password(request.json)
     return response.json({"message":"Password changed succesfully"},status=200)
-    
-    
-    

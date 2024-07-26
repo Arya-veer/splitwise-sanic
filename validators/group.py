@@ -1,4 +1,4 @@
-from core.exceptions import IncompleteParametersException
+from exceptions import IncompleteParametersException
 
 
 class GroupValidator:
@@ -12,5 +12,5 @@ class GroupValidator:
     def validate_add_users(payload):
         if "emails" not in payload:
             raise IncompleteParametersException()
-        if len(payload["email"] == 0):
+        if len(payload["emails"]) == 0:
             raise IncompleteParametersException()

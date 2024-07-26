@@ -1,5 +1,6 @@
 venv
 __pycache__
 keyconfig.py
+.vscode
 
 db_config.json

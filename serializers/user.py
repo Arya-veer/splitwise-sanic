@@ -6,6 +6,7 @@ class UserSerializer:
     @staticmethod
     def serialize_users(qs:QuerySet):
         data = []
+        print(qs)
         for obj in qs:
             serialized_obj = {
                 "static_id" : str(obj.static_id),

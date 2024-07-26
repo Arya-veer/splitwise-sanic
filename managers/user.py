@@ -6,10 +6,10 @@ from validators import UserValidator
 from repositories import UserRepository
 from serializers import UserSerializer
 from models import User
+from exceptions import SanicException
 
 from configurations.settings import AUTH_SECRET
 
-from core.exceptions import SanicException
 
 class UserManager:
     

@@ -1,7 +1,7 @@
 import jwt
 from repositories import UserRepository,GroupRepository,ExpenseRepository
 from managers import UserManager,GroupManager,ExpenseManager
-from core.exceptions import PermissionNotGrantedException
+from exceptions import PermissionNotGrantedException
 
 from configurations.settings import AUTH_SECRET
    
@@ -23,13 +23,14 @@ class AuthManager:
         await AuthManager.check_token(request)
         group = await GroupRepository.get_group_by_filters({"static_id":static_id})
         GroupManager._group = group
-        group_users = await GroupManager.list_users()
-        if UserManager._user not in group_users:
+        GroupManager._group_users = await GroupRepository.get_users_of_group(group)
+        if UserManager._user not in GroupManager._group_users:
             raise PermissionNotGrantedException(message="Can not access this group as you are not a member")
         
     @staticmethod
     async def check_expense_group_member(request,static_id):
         await AuthManager.check_token(request)
-        expense = await ExpenseRepository.get_expense_by_filters({"static_id":id})
+        expense = await ExpenseRepository.get_expense_by_filters({"static_id":static_id})
         ExpenseManager._expense = expense
-        await AuthManager.check_group_member(await expense.group)
+        group = await expense.group
+        await AuthManager.check_group_member(request,group.static_id)

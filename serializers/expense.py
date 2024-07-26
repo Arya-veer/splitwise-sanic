@@ -10,7 +10,7 @@ class ExpenseSerializer:
         for obj in qs:
             user = await obj.user
             serialized_data = {
-                "user":await UserSerializer.serialize_user(user),
+                "user": UserSerializer.serialize_user(user),
                 "amount":obj.amount,
                 "has_paid":obj.has_paid
             }
@@ -27,7 +27,7 @@ class ExpenseSerializer:
                 "static_id" : str(obj.static_id),
                 "title": obj.title,
                 "description" : obj.description,
-                "created_by": await UserSerializer.serialize_user(user),
+                "created_by": UserSerializer.serialize_user(user),
                 "created_at": obj.created_at.strftime("%d %B, %Y"),
                 "amount": obj.amount
             }
@@ -45,7 +45,7 @@ class ExpenseSerializer:
             "static_id" : str(expense.static_id),
             "title": expense.title,
             "description" : expense.description,
-            "created_by": await UserSerializer.serialize_user(user),
+            "created_by": UserSerializer.serialize_user(user),
             "created_at": expense.created_at.strftime("%d %B, %Y"),
             "amount": expense.amount,
             "paid_by": await ExpenseSerializer.serialize_expense_users(paid_by),

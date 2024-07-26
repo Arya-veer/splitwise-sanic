@@ -13,7 +13,8 @@ class GroupManager:
         GroupValidator.validate_create_group(payload)
         group = await GroupRepository.create_group(payload)
         await GroupRepository.add_user_to_group(group,UserManager._user)
-        return await GroupSerializer.serialize_group(group)
+        serialized_group = GroupSerializer.serialize_group(group)
+        return serialized_group
     
     @staticmethod
     async def list_groups_of_user():
@@ -24,8 +25,8 @@ class GroupManager:
     async def add_users(cls,payload):
         group = cls._group
         GroupValidator.validate_add_users(payload)
-        users = await UserRepository.fetch_users({"email__in":payload.get("emaillist")})
-        group.users.add(*users)
+        users = await UserRepository.fetch_users({"email__in":payload.get("emails")})
+        await group.users.add(*users)
         
     @classmethod
     def list_users(cls):
@@ -35,10 +36,16 @@ class GroupManager:
     async def add_expense(cls,payload):
         ExpenseValidator.validate_create_expense(payload,cls._group,UserManager._user)
         expense = await ExpenseRepository.add_expense(cls._group,UserManager._user,payload)
-        return await ExpenseSerializer.serialize_expense(expense)
+        serialized_expense = await ExpenseSerializer.serialize_expense(expense)
+        return serialized_expense
     
     @classmethod
     async def list_expenses(cls):
-        expenses = await ExpenseRepository.get_expenses_by_filters(group = cls._group)
+        expenses = await ExpenseRepository.get_expenses_by_fiters({"group":cls._group})
         return await ExpenseSerializer.serialize_expenses(expenses)
     
+    @classmethod
+    async def delete_group(cls):
+        print(cls._group)
+        await cls._group.delete()
+        cls._group = None

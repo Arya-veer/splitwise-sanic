@@ -4,7 +4,6 @@ class UserRepository:
     
     @staticmethod
     async def get_or_create_user(payload):
-        
         user,created = await User.get_or_create(email=payload.get("email"))
         if created:
             user.name = payload.get("name")
@@ -16,7 +15,7 @@ class UserRepository:
     async def fetch_users(payload):
         print(payload)
         users = await User.filter(**payload)
-        print(users)
+        print(payload)
         return users
     
     @staticmethod

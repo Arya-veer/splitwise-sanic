@@ -1,4 +1,4 @@
-from core.exceptions import IncompleteParametersException,SanicException
+from exceptions import IncompleteParametersException,SanicException
 
 class ExpenseValidator:
     
