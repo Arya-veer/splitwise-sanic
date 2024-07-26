@@ -2,6 +2,7 @@ import jwt
 from repositories import UserRepository,GroupRepository,ExpenseRepository
 from managers import UserManager,GroupManager,ExpenseManager
 from exceptions import PermissionNotGrantedException
+from caches import GroupCache
 
 from configurations.settings import AUTH_SECRET
    
@@ -20,7 +21,9 @@ class AuthManager:
     @staticmethod
     async def check_group_member(request,static_id):
         await AuthManager.check_token(request)
-        group = await GroupRepository.get_group_by_filters({"static_id":static_id})
+        group = GroupCache.get(str(static_id))
+        if group is None:
+            group = await GroupRepository.get_group_by_filters({"static_id":static_id})
         GroupManager._group = group
         GroupManager._group_users = await GroupRepository.get_users_of_group(group)
         if UserManager._user not in GroupManager._group_users:
