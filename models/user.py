@@ -4,10 +4,13 @@ import bcrypt
 from sanic import Sanic
 from tortoise import exceptions
 
+from configurations.settings import PASSWORD_SECRET
+
+
 class User(models.Model):
 
     static_id = fields.UUIDField(primary_key = True,default = uuid.uuid4, unique = True)
-    name = fields.CharField(max_length=30)
+    name = fields.CharField(max_length=30,null=True)
     password = fields.CharField(max_length=100,null=True)
     email = fields.CharField(max_length=40,validators=[validators.RegexValidator(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b',0)])
     groups = fields.ManyToManyField("models.Group",related_name="users")
@@ -23,7 +26,7 @@ class User(models.Model):
     def set_password(self,password):
         if self.secret is None:
             self.secret = uuid.uuid4()
-        master_secret_key = Sanic.get_app("splitwise").config.PASSWORD_SECRET
+        master_secret_key = PASSWORD_SECRET
         combined_password = password + master_secret_key + str(self.secret)
         self.password = bcrypt.hashpw(combined_password,bcrypt.gensalt())
     
@@ -34,8 +37,9 @@ class User(models.Model):
             user = await User.get(email=email)
         except exceptions.DoesNotExist:
             return None
+        print(user)
         app = Sanic.get_app("splitwise")
-        master_secret_key = app.config.PASSWORD_SECRET
+        master_secret_key = PASSWORD_SECRET
         combined_password = password + master_secret_key + str(user.secret)
         if bcrypt.checkpw(combined_password,user.password):
             return user

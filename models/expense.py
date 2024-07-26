@@ -33,6 +33,3 @@ class ExpenseUser(models.Model):
         
     def __str__(self) -> str:
         return f"Expense: {self.expense.title}, User: {self.user.title}, Paid: {self.paid}"
-    
-    def save(self, using_db: models.BaseDBAsyncClient | None = None, update_fields: models.Iterable[str] | None = None, force_create: bool = False, force_update: bool = False) -> Coroutine[Any, Any, None]:
-        return super().save(using_db, update_fields, force_create, force_update)
