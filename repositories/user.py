@@ -13,9 +13,7 @@ class UserRepository:
     
     @staticmethod
     async def fetch_users(payload):
-        print(payload)
         users = await User.filter(**payload)
-        print(payload)
         return users
     
     @staticmethod

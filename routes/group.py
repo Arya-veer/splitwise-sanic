@@ -28,7 +28,6 @@ async def delete_group(request,static_id):
 @group_blueprint.post("/<static_id:uuid>/add_users")
 @group_member_permission
 async def add_users(request,static_id):
-    print(request.json)
     await GroupManager.add_users(request.json)
     return response.json({"message":"Added users to group"},status=200)
 

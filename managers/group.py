@@ -46,6 +46,5 @@ class GroupManager:
     
     @classmethod
     async def delete_group(cls):
-        print(cls._group)
         await cls._group.delete()
         cls._group = None

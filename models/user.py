@@ -32,12 +32,10 @@ class User(models.Model):
     
     @classmethod
     async def authenticate(cls,email,password):
-        print(email)
         try:
             user = await User.get(email=email)
         except exceptions.DoesNotExist:
             return None
-        print(user)
         app = Sanic.get_app("splitwise")
         master_secret_key = PASSWORD_SECRET
         combined_password = password + master_secret_key + str(user.secret)

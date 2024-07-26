@@ -16,7 +16,6 @@ class AuthManager:
         if len(users) == 0:
             raise PermissionNotGrantedException()
         UserManager._user = users[0]
-        print(UserManager._user)
         
     @staticmethod
     async def check_group_member(request,static_id):
