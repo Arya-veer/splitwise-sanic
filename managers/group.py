@@ -1,8 +1,12 @@
+from uuid import UUID
+
 from validators import GroupValidator,ExpenseValidator
 from repositories import GroupRepository,UserRepository,ExpenseRepository,ExpenseUserRepository,UserGroupRepository
 from serializers import GroupSerializer,UserSerializer,ExpenseSerializer
 
 from .user import UserManager
+
+from tortoise.transactions import in_transaction,atomic
 
 class GroupManager:
     
@@ -36,15 +40,21 @@ class GroupManager:
     @classmethod
     async def add_expense(cls,payload):
         ExpenseValidator.validate_create_expense(payload,cls._group,UserManager._user)
-        expense = await ExpenseRepository.add_expense(cls._group,UserManager._user,payload)
-        serialized_expenses = await ExpenseSerializer.serialize_expense(expense)
-        for paid_by_user in serialized_expenses.get("paid_by"):
-            user_group = UserGroupRepository.get_user_group({"user_id":paid_by_user["user"]["static_id"],"group_id":cls._group.static_id})
-            await UserGroupRepository.update_user_group_amount(user_group,paid_by_user["amount"])
-        for paid_for_user in serialized_expenses.get("paid_for"):
-            user_group = UserGroupRepository.get_user_group({"user_id":paid_for_user["user"]["static_id"],"group_id":cls._group.static_id})
-            await UserGroupRepository.update_user_group_amount(user_group,paid_for_user["amount"]*-1)
-        return serialized_expenses
+        async with in_transaction():
+            users = payload.pop("users")
+            expense = await ExpenseRepository.add_expense(cls._group,UserManager._user,payload)
+            for user in users:
+                user["expense_id"] = str(expense.static_id)
+                await ExpenseUserRepository.create_expense_user(payload=user)
+                user_obj = await UserRepository.fetch_users({"static_id":user["user_id"]})
+                user_group = await UserGroupRepository.get_user_group({"user":user_obj[0],"group":cls._group})
+                if not user['has_paid']:
+                    user["amount"] *= -1
+                await UserGroupRepository.update_user_group_amount(user_group,user["amount"])
+            serialized_expense = await ExpenseSerializer.serialize_expense(expense)
+            return serialized_expense
+        return {}
+        
     
     @classmethod
     async def list_expenses(cls):
@@ -88,4 +98,5 @@ class GroupManager:
                 )
                 pos_ind+=1
                 neg_ind-=1
+        # print(payments)
         return payments

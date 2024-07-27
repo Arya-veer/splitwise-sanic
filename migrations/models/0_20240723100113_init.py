@@ -41,10 +41,10 @@ CREATE TABLE IF NOT EXISTS "aerich" (
     "content" JSONB NOT NULL
 );
 CREATE TABLE IF NOT EXISTS "User_Group" (
-    "User_id" UUID NOT NULL REFERENCES "User" ("static_id") ON DELETE CASCADE,
+    "user_id" UUID NOT NULL REFERENCES "User" ("static_id") ON DELETE CASCADE,
     "group_id" UUID NOT NULL REFERENCES "Group" ("static_id") ON DELETE CASCADE
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "uidx_User_Group_User_id_5d1db0" ON "User_Group" ("User_id", "group_id");"""
+CREATE UNIQUE INDEX IF NOT EXISTS "uidx_User_Group_User_id_5d1db0" ON "User_Group" ("user_id", "group_id");"""
 
 
 async def downgrade(db: BaseDBAsyncClient) -> str:

@@ -13,6 +13,10 @@ class ExpenseUserRepository:
         expense_users = await ExpenseUser.filter(**payload).order_by(ordering)
         return expense_users
     
+    @staticmethod
+    async def create_expense_user(payload):
+        expense_user = await ExpenseUser.create(**payload)
+    
     
 
 class ExpenseRepository:
@@ -29,11 +33,7 @@ class ExpenseRepository:
     
     @staticmethod
     async def add_expense(group,user,payload):
-        users = payload.pop("users")
-        async with in_transaction():
-            expense = await Expense.create(**payload,group=group,uploaded_by=user)
-            for user in users:
-                await ExpenseUser.get_or_create(**user,expense=expense)
+        expense = await Expense.create(**payload,group=group,uploaded_by=user)
         return expense
         
     @staticmethod
