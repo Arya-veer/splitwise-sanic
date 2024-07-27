@@ -3,6 +3,7 @@ from uuid import UUID
 from validators import GroupValidator,ExpenseValidator
 from repositories import GroupRepository,UserRepository,ExpenseRepository,ExpenseUserRepository,UserGroupRepository
 from serializers import GroupSerializer,UserSerializer,ExpenseSerializer
+from caches import RedisCache
 
 from .user import UserManager
 
@@ -52,8 +53,8 @@ class GroupManager:
                     user["amount"] *= -1
                 await UserGroupRepository.update_user_group_amount(user_group,user["amount"])
             serialized_expense = await ExpenseSerializer.serialize_expense(expense)
+            await RedisCache.delete(f"{cls._group.static_id}:settlements")
             return serialized_expense
-        return {}
         
     
     @classmethod
@@ -69,34 +70,39 @@ class GroupManager:
         
     @classmethod
     async def settle_up(cls,persist=False):
+        settlements = await RedisCache.smembers(f"{cls._group.static_id}:settlements")
+        print(settlements)
+        if len(settlements) > 0:
+            return settlements
         user_groups_pos = await UserGroupRepository.get_user_groups({"group":cls._group,"settled_amount__gt":0},ordering="-settled_amount")
         user_groups_neg = await UserGroupRepository.get_user_groups({"group":cls._group,"settled_amount__lt":0},ordering="settled_amount")
         pos_ind = neg_ind = 0
-        payments = []
+        settlements = []
         while pos_ind < len(user_groups_pos) and neg_ind < len(user_groups_neg):
             pos_user = await user_groups_pos[pos_ind].user
             neg_user = await user_groups_neg[neg_ind].user
             pos_amount = user_groups_pos[pos_ind].settled_amount
             neg_amount = user_groups_neg[neg_ind].settled_amount*-1
             if pos_amount > neg_amount:
-                payments.append(
+                settlements.append(
                     f"{neg_user} will pay {pos_user} Rs. {neg_amount}"
                 )
                 neg_ind+=1
                 user_groups_pos[pos_ind].settled_amount -= neg_amount
                 
             elif pos_amount < neg_amount:
-                payments.append(
+                settlements.append(
                     f"{neg_user} will pay {pos_user} Rs. {pos_amount}"
                 )
                 pos_ind+=1
                 user_groups_neg[neg_ind].settled_amount += pos_amount
                 
             else:
-                payments.append(
+                settlements.append(
                     f"{neg_user} will pay {pos_user} Rs. {neg_amount}"
                 )
                 pos_ind+=1
                 neg_ind-=1
-        # print(payments)
-        return payments
+        # print(settlements)
+        await RedisCache.sadd(f"{cls._group.static_id}:settlements",*settlements)
+        return settlements

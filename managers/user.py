@@ -35,7 +35,6 @@ class UserManager:
             "timestamp":str(datetime.now())
         },key=AUTH_SECRET)
         return token
-        return token
     
     @classmethod
     async def change_password(cls,payload):

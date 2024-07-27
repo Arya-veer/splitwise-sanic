@@ -29,3 +29,8 @@ class ExpenseValidator:
                 neg_amount+=user.get("amount")
         if total_amount != pos_amount or total_amount != neg_amount:
             raise SanicException("Amounts do not match")
+        
+    @staticmethod
+    def validate_rename_expense(payload):
+        if "title" not in payload:
+            raise IncompleteParametersException("'title' not provided")

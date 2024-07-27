@@ -27,8 +27,8 @@ class ExpenseRepository:
         return expense
     
     @staticmethod
-    async def get_expenses_by_fiters(payload):
-        expenses = await Expense.filter(**payload)
+    async def get_expenses_by_fiters(payload,ordering = 'title'):
+        expenses = await Expense.filter(**payload).order_by(ordering)
         return expenses 
     
     @staticmethod
@@ -37,5 +37,11 @@ class ExpenseRepository:
         return expense
         
     @staticmethod
-    async def delete_expense(expense):
+    async def delete_expense(expense:Expense):
         await expense.delete()
+        
+    @staticmethod
+    async def edit_expense(expense:Expense,payload):
+        expense_updated = expense.update_from_dict(data=payload)
+        expense_updated = await expense_updated.save(update_fields=list(payload.keys()))
+        return expense_updated

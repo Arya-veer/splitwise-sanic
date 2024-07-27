@@ -1,8 +1,9 @@
 
 from serializers import ExpenseSerializer
+from validators import ExpenseValidator
 from repositories import ExpenseRepository
-
-
+from tortoise.transactions import in_transaction
+from caches import RedisCache
 class ExpenseManager:
     
     _expense = None
@@ -13,4 +14,13 @@ class ExpenseManager:
     
     @classmethod
     async def delete_expense(cls):
-        await ExpenseRepository.delete_expense(cls._expense)
+        async with in_transaction():
+            await RedisCache.delete(f"{cls._expense.group_id}:settlements")
+            await ExpenseRepository.delete_expense(cls._expense)
+            
+    @classmethod
+    async def rename_expense(cls,payload):
+        ExpenseValidator.validate_rename_expense(payload)
+        updated_expense = await ExpenseRepository.edit_expense(cls._expense,{"title":payload.get("title")})
+        serialized_updated_expense = await ExpenseSerializer.serialize_expense(updated_expense)
+        return serialized_updated_expense
