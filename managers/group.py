@@ -3,7 +3,7 @@ from uuid import UUID
 from validators import GroupValidator,ExpenseValidator
 from repositories import GroupRepository,UserRepository,ExpenseRepository,ExpenseUserRepository,UserGroupRepository
 from serializers import GroupSerializer,UserSerializer,ExpenseSerializer
-from caches import RedisCache
+from caches import ExpenseSettleCache
 
 from .user import UserManager
 
@@ -53,7 +53,7 @@ class GroupManager:
                     user["amount"] *= -1
                 await UserGroupRepository.update_user_group_amount(user_group,user["amount"])
             serialized_expense = await ExpenseSerializer.serialize_expense(expense)
-            await RedisCache.delete(f"{cls._group.static_id}:settlements")
+            await ExpenseSettleCache.delete_settlements(cls._group.static_id)
             return serialized_expense
         
     
@@ -70,7 +70,7 @@ class GroupManager:
         
     @classmethod
     async def settle_up(cls,persist=False):
-        settlements = await RedisCache.smembers(f"{cls._group.static_id}:settlements")
+        settlements = await ExpenseSettleCache.get_settlements(cls._group.static_id)
         print(settlements)
         if len(settlements) > 0:
             return settlements
@@ -104,5 +104,5 @@ class GroupManager:
                 pos_ind+=1
                 neg_ind-=1
         # print(settlements)
-        await RedisCache.sadd(f"{cls._group.static_id}:settlements",*settlements)
+        await ExpenseSettleCache.set_settlements(cls._group.static_id,settlements)
         return settlements

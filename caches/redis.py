@@ -65,8 +65,4 @@ class RedisCache:
         members = await cls.__redis_cache.smembers(key)
         return list(members)
     
-    @classmethod
-    @prefix_key
-    async def delete(cls,*keys):
-        await cls.__redis_cache.delete(*keys)
         
