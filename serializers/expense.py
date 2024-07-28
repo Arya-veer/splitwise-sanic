@@ -1,6 +1,7 @@
 
 from tortoise.queryset import QuerySet
 from .user import UserSerializer
+from models import Expense
 
 class ExpenseSerializer:
 
@@ -19,7 +20,7 @@ class ExpenseSerializer:
 
 
     @staticmethod
-    async def serialize_expenses(qs:QuerySet):
+    async def serialize_expenses(qs:QuerySet[Expense]):
         data = []
         for obj in qs:
             user = await obj.uploaded_by
@@ -29,14 +30,15 @@ class ExpenseSerializer:
                 "description" : obj.description,
                 "created_by": UserSerializer.serialize_user(user),
                 "created_at": obj.created_at.strftime("%d %B, %Y"),
-                "amount": obj.amount
+                "amount": obj.amount,
+                "currency": obj.currency
             }
             data.append(serialized_obj) 
         return data  
 
 
     @staticmethod
-    async def serialize_expense(expense):
+    async def serialize_expense(expense:Expense):
         user = await expense.uploaded_by
         paid_by = await expense.expense_users.filter(has_paid = True)
         paid_for = await expense.expense_users.filter(has_paid = False)
@@ -48,6 +50,7 @@ class ExpenseSerializer:
             "created_by": UserSerializer.serialize_user(user),
             "created_at": expense.created_at.strftime("%d %B, %Y"),
             "amount": expense.amount,
+            "currency": expense.currency,
             "paid_by": await ExpenseSerializer.serialize_expense_users(paid_by),
             "paid_for": await ExpenseSerializer.serialize_expense_users(paid_for),
         }

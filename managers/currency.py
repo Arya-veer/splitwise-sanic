@@ -15,3 +15,15 @@ class CurrencyManager:
             await CurrencyRatesCache.set_rates(data)
             rates = data["rates"]
         return rates
+    
+    
+    @staticmethod
+    async def convert_amount_to_usd(currency,amount):
+        rates = await CurrencyManager.get_all_currencies()
+        return rates[currency]*amount
+    
+    
+    @staticmethod
+    async def convert_amount_from_usd(currency,amount):
+        rates = await CurrencyManager.get_all_currencies()
+        return amount/rates[currency]

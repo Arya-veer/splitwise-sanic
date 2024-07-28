@@ -13,6 +13,7 @@ class Expense(models.Model):
     updated_at = fields.DatetimeField(auto_now=True)
     involved_users = fields.ManyToManyField("models.User",through="ExpenseUser",related_name="expenses")
     amount = fields.IntField(default = 0)
+    currency = fields.CharField(max_length=10,default="USD")
     
     class Meta:
         table = "Expense"
