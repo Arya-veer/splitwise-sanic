@@ -4,3 +4,6 @@ aerich
 jwt
 bcrypt
 redis
+pytest
+pytest-asyncio
+sanic-testing

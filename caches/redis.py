@@ -9,11 +9,16 @@ class RedisCache:
     _prefix = ""
     _expiry = 60*10
     
+    @classmethod
+    def get_redis(cls):
+        return cls.__redis_cache
+    
+    @staticmethod
     def prefix_key(f):
         @wraps(f)
         async def wrapper(cls,key,*args):
             if not isinstance(key,str):
-                raise Exception("Redis key can only be string")
+                raise Exception(f"Redis key:'{key}' can only be string")
             if cls._prefix:
                 key = f"splitwise:{cls._prefix}:{key}" 
             else:
@@ -47,6 +52,7 @@ class RedisCache:
     async def get_dict(cls,key):
         value = await cls.__redis_cache.hgetall(key)
         return value
+        
     
     @classmethod
     @prefix_key
