@@ -1,11 +1,17 @@
 from redis.asyncio import Redis
 
 from functools import wraps
+import os,json
+from configurations.settings import BASE_DIR
 
+CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
+
+with open(CONFIG_PATH,"r") as f:
+    REDIS_CONFIG = json.loads(f.read())["REDIS"]
 
 class RedisCache:
 
-    __redis_cache = Redis(decode_responses=True)
+    __redis_cache = Redis(**REDIS_CONFIG)
     _prefix = ""
     _expiry = 60 * 10
 
