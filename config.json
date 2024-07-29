@@ -1,0 +1,27 @@
+{
+    "REDIS":{
+        "host":"localhost",
+        "port":6379,
+        "decode_responses":true
+    },
+    "DATABASE":{
+        "connections": {
+            "default": {
+                "engine": "tortoise.backends.asyncpg",
+                "credentials": {
+                    "host": "localhost",
+                    "port": "5432",
+                    "user": "postgres",
+                    "password": "postgres",
+                    "database": "splitwise"
+                }
+            }
+        },
+        "apps": {
+            "models": {
+                "models": ["models.group","models.user","models.expense","aerich.models"],
+                "default_connection": "default"
+            }
+        }
+    }
+}
