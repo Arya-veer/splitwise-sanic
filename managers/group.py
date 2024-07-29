@@ -10,7 +10,7 @@ from repositories import (
 )
 from serializers import GroupSerializer, UserSerializer, ExpenseSerializer
 from caches import ExpenseSettleCache
-from .currency import CurrencyManager
+from utils.currency import CurrencyUtil
 from .user import UserManager
 from models import Group
 from models import User
@@ -53,17 +53,17 @@ class GroupManager:
         async with in_transaction():
             users = payload.pop("users")
             payload["currency"] = payload.get("currency", cls._group.currency)
-            payload["amount"] = await CurrencyManager.convert_currency(
+            payload["amount"] = await CurrencyUtil.convert_currency(
                 payload["currency"], cls._group.currency, payload["amount"]
             )
             expense = await ExpenseRepository.add_expense(
                 cls._group, UserManager._user, payload
             )
-            cls._group.total_expense += expense.total_expense
+            cls._group.total_expense += expense.amount
             await cls._group.save()
             for user in users:
                 user["expense_id"] = str(expense.static_id)
-                user["amount"] = await CurrencyManager.convert_currency(
+                user["amount"] = await CurrencyUtil.convert_currency(
                     payload["currency"], cls._group.currency, user["amount"]
                 )
                 await ExpenseUserRepository.create_expense_user(payload=user)
@@ -110,10 +110,10 @@ class GroupManager:
         while pos_ind < len(user_groups_pos) and neg_ind < len(user_groups_neg):
             pos_user = await user_groups_pos[pos_ind].user
             neg_user = await user_groups_neg[neg_ind].user
-            pos_amount = await CurrencyManager.convert_currency(
+            pos_amount = await CurrencyUtil.convert_currency(
                 cls._group.currency, currency, user_groups_pos[pos_ind].settled_amount
             )
-            neg_amount = await CurrencyManager.convert_currency(
+            neg_amount = await CurrencyUtil.convert_currency(
                 cls._group.currency,
                 currency,
                 user_groups_neg[neg_ind].settled_amount * -1,
