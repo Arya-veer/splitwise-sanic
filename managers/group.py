@@ -52,8 +52,10 @@ class GroupManager:
         ExpenseValidator.validate_create_expense(payload, cls._group, UserManager._user)
         async with in_transaction():
             users = payload.pop("users")
-            if not "currency" in payload:
-                payload["currency"] = cls._group.currency
+            payload["currency"] = payload.get("currency", cls._group.currency)
+            payload["amount"] = await CurrencyManager.convert_currency(
+                payload["currency"], cls._group.currency, payload["amount"]
+            )
             expense = await ExpenseRepository.add_expense(
                 cls._group, UserManager._user, payload
             )
@@ -61,6 +63,9 @@ class GroupManager:
             await cls._group.save()
             for user in users:
                 user["expense_id"] = str(expense.static_id)
+                user["amount"] = await CurrencyManager.convert_currency(
+                    payload["currency"], cls._group.currency, user["amount"]
+                )
                 await ExpenseUserRepository.create_expense_user(payload=user)
                 user_obj = await UserRepository.fetch_users(
                     {"static_id": user["user_id"]}
@@ -105,8 +110,14 @@ class GroupManager:
         while pos_ind < len(user_groups_pos) and neg_ind < len(user_groups_neg):
             pos_user = await user_groups_pos[pos_ind].user
             neg_user = await user_groups_neg[neg_ind].user
-            pos_amount = user_groups_pos[pos_ind].settled_amount
-            neg_amount = user_groups_neg[neg_ind].settled_amount * -1
+            pos_amount = await CurrencyManager.convert_currency(
+                cls._group.currency, currency, user_groups_pos[pos_ind].settled_amount
+            )
+            neg_amount = await CurrencyManager.convert_currency(
+                cls._group.currency,
+                currency,
+                user_groups_neg[neg_ind].settled_amount * -1,
+            )
             if pos_amount > neg_amount:
                 settlements.append(
                     f"{neg_user} will pay {pos_user} {currency} {neg_amount}"

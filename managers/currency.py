@@ -23,3 +23,13 @@ class CurrencyManager:
     async def convert_amount_from_usd(currency, amount):
         rates = await CurrencyManager.get_all_currencies()
         return amount / rates[currency]
+
+    @staticmethod
+    async def convert_currency(from_currency, to_currency, amount):
+        if from_currency == to_currency:
+            return amount
+        usd_amount = await CurrencyManager.convert_amount_to_usd(from_currency, amount)
+        final_amount = await CurrencyManager.convert_amount_from_usd(
+            to_currency, usd_amount
+        )
+        return final_amount
