@@ -1,9 +1,9 @@
 sanic
-tortoise-orm
+tortoise - orm
 aerich
 jwt
 bcrypt
 redis
 pytest
-pytest-asyncio
-sanic-testing
+pytest - asyncio
+sanic - testing

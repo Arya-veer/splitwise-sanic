@@ -1,9 +1,10 @@
-from exceptions import IncompleteParametersException,SanicException
+from exceptions import IncompleteParametersException, SanicException
+
 
 class ExpenseValidator:
-    
+
     @staticmethod
-    def validate_create_expense(payload,group,user):
+    def validate_create_expense(payload, group, user):
         if group is None:
             raise IncompleteParametersException("Group not found")
         if user is None:
@@ -24,12 +25,12 @@ class ExpenseValidator:
             if "has_paid" not in user:
                 raise IncompleteParametersException("'has_paid' not provided for user")
             if user.get("has_paid"):
-                pos_amount+=user.get("amount")
+                pos_amount += user.get("amount")
             else:
-                neg_amount+=user.get("amount")
+                neg_amount += user.get("amount")
         if total_amount != pos_amount or total_amount != neg_amount:
             raise SanicException("Amounts do not match")
-        
+
     @staticmethod
     def validate_rename_expense(payload):
         if "title" not in payload:

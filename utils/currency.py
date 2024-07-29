@@ -2,7 +2,7 @@ from aiohttp import ClientSession
 
 
 class CurrencyAPIClient:
-    
+
     _API_HOST = "https://open.er-api.com/v6/latest/USD"
 
     @classmethod

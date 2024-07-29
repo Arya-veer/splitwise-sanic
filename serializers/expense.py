@@ -1,52 +1,50 @@
-
 from tortoise.queryset import QuerySet
 from .user import UserSerializer
 from models import Expense
 
+
 class ExpenseSerializer:
 
     @staticmethod
-    async def serialize_expense_users(qs:QuerySet):
+    async def serialize_expense_users(qs: QuerySet):
         data = []
         for obj in qs:
             user = await obj.user
             serialized_data = {
                 "user": UserSerializer.serialize_user(user),
-                "amount":obj.amount,
-                "has_paid":obj.has_paid
+                "amount": obj.amount,
+                "has_paid": obj.has_paid,
             }
             data.append(serialized_data)
         return data
 
-
     @staticmethod
-    async def serialize_expenses(qs:QuerySet[Expense]):
+    async def serialize_expenses(qs: QuerySet[Expense]):
         data = []
         for obj in qs:
             user = await obj.uploaded_by
             serialized_obj = {
-                "static_id" : str(obj.static_id),
+                "static_id": str(obj.static_id),
                 "title": obj.title,
-                "description" : obj.description,
+                "description": obj.description,
                 "created_by": UserSerializer.serialize_user(user),
                 "created_at": obj.created_at.strftime("%d %B, %Y"),
                 "amount": obj.amount,
-                "currency": obj.currency
+                "currency": obj.currency,
             }
-            data.append(serialized_obj) 
-        return data  
-
+            data.append(serialized_obj)
+        return data
 
     @staticmethod
-    async def serialize_expense(expense:Expense):
+    async def serialize_expense(expense: Expense):
         user = await expense.uploaded_by
-        paid_by = await expense.expense_users.filter(has_paid = True)
-        paid_for = await expense.expense_users.filter(has_paid = False)
-        
+        paid_by = await expense.expense_users.filter(has_paid=True)
+        paid_for = await expense.expense_users.filter(has_paid=False)
+
         return {
-            "static_id" : str(expense.static_id),
+            "static_id": str(expense.static_id),
             "title": expense.title,
-            "description" : expense.description,
+            "description": expense.description,
             "created_by": UserSerializer.serialize_user(user),
             "created_at": expense.created_at.strftime("%d %B, %Y"),
             "amount": expense.amount,

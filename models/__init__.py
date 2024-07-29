@@ -1,3 +1,3 @@
-from .expense import Expense,ExpenseUser
+from .expense import Expense, ExpenseUser
 from .group import Group
-from .user import User,UserGroup
+from .user import User, UserGroup
