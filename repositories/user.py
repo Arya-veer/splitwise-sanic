@@ -27,8 +27,6 @@ class UserGroupRepository:
 
     @staticmethod
     async def get_user_group(payload):
-        print(payload)
-        print(payload)
         user_group = await UserGroup.get(**payload)
         return user_group
 

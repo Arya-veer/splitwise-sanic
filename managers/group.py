@@ -10,21 +10,24 @@ from repositories import (
 )
 from serializers import GroupSerializer, UserSerializer, ExpenseSerializer
 from caches import ExpenseSettleCache
-from utils.currency import CurrencyUtil
 from .user import UserManager
 from models import Group
 from models import User
-from tortoise.transactions import in_transaction, atomic
+from tortoise.transactions import in_transaction
 from typing import List
 
+from managers.expense_split import split_type,BaseSplit
 
 class GroupManager:
 
     _group: Group = None
     _group_users: List[User] = None
+    
 
+    
     @staticmethod
     async def create_group(payload):
+        
         GroupValidator.validate_create_group(payload)
         group = await GroupRepository.create_group(payload)
         await GroupRepository.add_user_to_group(group, UserManager._user)
@@ -46,41 +49,22 @@ class GroupManager:
     @classmethod
     def list_users(cls):
         return UserSerializer.serialize_users(cls._group_users)
+        
 
     @classmethod
     async def add_expense(cls, payload: dict):
         ExpenseValidator.validate_create_expense(payload, cls._group, UserManager._user)
         async with in_transaction():
-            users = payload.pop("users")
-            payload["currency"] = payload.get("currency", cls._group.currency)
-            payload["amount"] = await CurrencyUtil.convert_currency(
-                payload["currency"], cls._group.currency, payload["amount"]
-            )
+            SplitManager:BaseSplit = split_type[payload.pop("split_type")]
             expense = await ExpenseRepository.add_expense(
                 cls._group, UserManager._user, payload
             )
+            split_manager = SplitManager()
+            result = split_manager.split()
             cls._group.total_expense += expense.amount
             await cls._group.save()
-            for user in users:
-                user["expense_id"] = str(expense.static_id)
-                user["amount"] = await CurrencyUtil.convert_currency(
-                    payload["currency"], cls._group.currency, user["amount"]
-                )
-                await ExpenseUserRepository.create_expense_user(payload=user)
-                user_obj = await UserRepository.fetch_users(
-                    {"static_id": user["user_id"]}
-                )
-                user_group = await UserGroupRepository.get_user_group(
-                    {"user": user_obj[0], "group": cls._group}
-                )
-                if not user["has_paid"]:
-                    user["amount"] *= -1
-                await UserGroupRepository.update_user_group_amount(
-                    user_group, user["amount"]
-                )
-            serialized_expense = await ExpenseSerializer.serialize_expense(expense)
+            
             await ExpenseSettleCache.delete_settlements(cls._group.static_id)
-            return serialized_expense
 
     @classmethod
     async def list_expenses(cls):
@@ -94,7 +78,6 @@ class GroupManager:
 
     @classmethod
     async def settle_up(cls, params):
-        currency = params.get("currency", cls._group.currency)
         persist = params.get("persist", False)
         settlements = await ExpenseSettleCache.get_settlements(cls._group.static_id)
         if len(settlements) > 0:
@@ -110,31 +93,26 @@ class GroupManager:
         while pos_ind < len(user_groups_pos) and neg_ind < len(user_groups_neg):
             pos_user = await user_groups_pos[pos_ind].user
             neg_user = await user_groups_neg[neg_ind].user
-            pos_amount = await CurrencyUtil.convert_currency(
-                cls._group.currency, currency, user_groups_pos[pos_ind].settled_amount
-            )
-            neg_amount = await CurrencyUtil.convert_currency(
-                cls._group.currency,
-                currency,
-                user_groups_neg[neg_ind].settled_amount * -1,
-            )
+            pos_amount = user_groups_pos[pos_ind].settled_amount
+            neg_amount = user_groups_neg[neg_ind].settled_amount * -1
+                
             if pos_amount > neg_amount:
                 settlements.append(
-                    f"{neg_user} will pay {pos_user} {currency} {neg_amount}"
+                    f"{neg_user} will pay {pos_user} Rs. {neg_amount}"
                 )
                 neg_ind += 1
                 user_groups_pos[pos_ind].settled_amount -= neg_amount
 
             elif pos_amount < neg_amount:
                 settlements.append(
-                    f"{neg_user} will pay {pos_user} {currency} {pos_amount}"
+                    f"{neg_user} will pay {pos_user} Rs. {pos_amount}"
                 )
                 pos_ind += 1
                 user_groups_neg[neg_ind].settled_amount += pos_amount
 
             else:
                 settlements.append(
-                    f"{neg_user} will pay {pos_user} {currency} {neg_amount}"
+                    f"{neg_user} will pay {pos_user} Rs. {neg_amount}"
                 )
                 pos_ind += 1
                 neg_ind -= 1

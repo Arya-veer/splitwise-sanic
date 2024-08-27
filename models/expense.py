@@ -16,7 +16,6 @@ class Expense(models.Model):
         "models.User", through="ExpenseUser", related_name="expenses"
     )
     amount = fields.IntField(default=0)
-    currency = fields.CharField(max_length=10, default="USD")
 
     class Meta:
         table = "Expense"

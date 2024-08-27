@@ -3,7 +3,7 @@ from validators import ExpenseValidator
 from repositories import ExpenseRepository
 from tortoise.transactions import in_transaction
 from caches import ExpenseSettleCache
-
+from  .expense_split.base_split import BaseSplit
 
 class ExpenseManager:
 

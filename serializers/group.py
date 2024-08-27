@@ -8,7 +8,6 @@ class GroupSerializer:
                 "static_id": str(obj.static_id),
                 "name": obj.name,
                 "created_at": obj.created_at.strftime("%d %B, %Y"),
-                "currency": obj.currency,
             }
             data.append(serialized_obj)
         return data
@@ -19,5 +18,4 @@ class GroupSerializer:
             "static_id": str(obj.static_id),
             "name": obj.name,
             "created_at": obj.created_at.strftime("%d %B, %Y"),
-            "currency": obj.currency,
         }

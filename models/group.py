@@ -9,7 +9,6 @@ class Group(models.Model):
     created_at = fields.DatetimeField(default=timezone.now)
     updated_at = fields.DatetimeField(auto_now=True)
     total_expense = fields.DecimalField(max_digits=6, decimal_places=2, default=0.00)
-    currency = fields.CharField(max_length=10, default="USD")
 
     class Meta:
         table = "Group"
